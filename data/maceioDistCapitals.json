@@ -1,29 +1,131 @@
-{"Maceio": {
-    "Rio Branco": [3513, 5063],
-    "Macapa": [2011, 3545],
-    "Manaus": [2779, 5444],
-    "Salvador": [476, 578],
-    "Fortaleza": [731, 965],
-    "Brasilia": [1487, 1920],
-    "Vitoria": [1282, 1611],
-    "Goiania": [1658, 2119],
-    "Sao Luis": [1236, 1584],
-    "Cuiaba": [2304, 3111],
-    "Campo Grande": [2355,2830],
-    "Belo Horizonte": [1443, 1855],
-    "Belem": [1682, 2059],
-    "Joao Pessoa": [300, 371],
-    "Curitiba": [2263, 2805],
-    "Recife": [203, 257],
-    "Teresina": [931, 1155],
-    "Rio de Janeiro": [1674, 2071],
-    "Natal": [435, 539],
-    "Porto Alegre": [2778, 3531],
-    "Porto Velho": [3093, 4559],
-    "Boa Vista": [3092, 6184],
-    "Florianopolis": [2404, 3091],
-    "Sao Paulo": [1933, 2413],
-    "Aracaju": [202, 269],
-    "Palmas": [1381, 1895]
-}
-}
+[   {
+        "city":"Rio Branco",
+        "distLine": 3513,
+        "distHighway": 5063
+    },
+    {
+        "city":"Macapa",
+        "distLine": 2011,
+        "distHighway": 3545
+    },
+    {
+        "city":"Manaus",
+        "distLine": 2779,
+        "distHighway": 5444
+    },
+    {
+        "city":"Salvador",
+        "distLine": 476,
+        "distHighway": 578
+    },
+    {
+        "city":"Fortaleza",
+        "distLine": 731,
+        "distHighway": 965
+    },
+    {
+        "city":"Brasilia",
+        "distLine": 1487,
+        "distHighway": 1920
+    },
+    {
+        "city":"Vitoria",
+        "distLine": 1282,
+        "distHighway": 1611
+    },
+    {
+        "city":"Goiania",
+        "distLine": 1658,
+        "distHighway": 2119
+    },
+    {
+        "city":"Sao Luis",
+        "distLine": 1236,
+        "distHighway": 1584
+    },
+    {
+        "city":"Cuiaba",
+        "distLine": 2304,
+        "distHighway": 3111
+    },
+    {
+        "city":"Campo Grande",
+        "distLine": 2355,
+        "distHighway": 2830
+    },
+    {
+        "city":"Belo Horizonte",
+        "distLine": 1443,
+        "distHighway": 1855
+    },
+    {
+        "city":"Belem",
+        "distLine": 1682,
+        "distHighway": 2059
+    },
+    {
+        "city":"Joao Pessoa",
+        "distLine": 300,
+        "distHighway": 371
+    },
+    {
+        "city":"Curitiba",
+        "distLine": 2263,
+        "distHighway": 2805
+    },
+    {
+        "city":"Recife",
+        "distLine": 203,
+        "distHighway": 257
+    },
+    {
+        "city":"Teresina",
+        "distLine": 931,
+        "distHighway": 1155
+    },
+    {
+        "city":"Teresina",
+        "distLine": 1674,
+        "distHighway": 2071
+    },
+    {
+        "city":"Natal",
+        "distLine": 435,
+        "distHighway": 539
+    },
+    {
+        "city":"Porto Alegre",
+        "distLine": 2778,
+        "distHighway": 3531
+    },
+    {
+        "city":"Porto Velho",
+        "distLine": 3093,
+        "distHighway": 4559
+    },
+    {
+        "city":"Boa Vista",
+        "distLine": 3092,
+        "distHighway": 6184
+    },
+    {
+        "city":"Florianopolis",
+        "distLine": 2404,
+        "distHighway": 3091
+    },
+    {
+        "city":"Sao Paulo",
+        "distLine": 1933,
+        "distHighway": 2413
+    },
+    {
+        "city":"Aracaju",
+        "distLine": 202,
+        "distHighway": 269
+    },
+    {
+        "city":"Palmas",
+        "distLine": 1381,
+        "distHighway": 1895
+    }
+]
