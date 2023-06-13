@@ -10,6 +10,13 @@ install() {
     docker container exec -it airflow bash
     #Instalando as bibliotecas para não ter erros nas Dags
     pip install pymysql xlrd openpyxl minio
+    pip install pyspark findspark install-jdk
+    #Instalando Java no Airflow
+    docker container exec -it -u root airflow bash
+    apt update && \
+    apt-get install -y openjdk-11-jdk && \
+    apt-get install -y ant && \
+    apt-get clean;
     #Adicionando as variaveis no Airflow
     # data_lake_server = 
     # data_lake_login = minioadmin
