@@ -32,6 +32,8 @@ install() {
     #Para acessar o Jupyter Notebook com os arquivos locais
     jupyter notebook --ip 0.0.0.0 --port 8888 --no-browser --allow-root
 
+    #Docker move files Airflow to Root
+    docker cp airflow:/opt/airflow/dataMinio/curated .
 
     echo "Install Metabase..."
     mkdir metabase

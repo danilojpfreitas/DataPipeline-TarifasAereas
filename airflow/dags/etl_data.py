@@ -103,15 +103,28 @@ def extract_icao():
 
   icao.printSchema()
 
-  #transform!
+def transform_dist():
+  pathDist = "dataMinio/landing/dist.json"
 
-  icao.select("icao", "city", "country").where('country=="Brazil"').limit(5).show()
+  dist = spark.read.option("multiline", "true").json(pathDist)
 
-  icaoAirportBrazil = icao.select("icao", "city", "country").where('country=="Brazil"')
+  #transform to parquet
+  distParquet = "dataMinio/processing/dist/dist.parquet"
 
-  icaoAirportBrazilNotNull = icaoAirportBrazil.where('icao!=""').limit(60).show()
+  dist.write.parquet(
+    distParquet,
+    mode = 'overwrite'
+  )
 
-  icaoAirportBrazil.printSchema()
+  dist_parquet = spark.read.parquet(distParquet)
+
+  dist_parquet.show()
+
+  # result = client.fput_object(
+  #   "processing",
+  #   "dist.parquet",
+  #   "/opt/airflow/dataMinio/processing/dist/dist.parquet"
+  # )
 
 def transform_price():
   price2019 = spark.read.csv("dataMinio/landing/price2019/*.csv", sep=';', inferSchema=True)
@@ -258,6 +271,191 @@ def transform_price():
 
   price2022.printSchema()
 
+  #tranform to Parquet
+  #2019
+  pathProcessingZone2019 = "dataMinio/processing/2019/2019.parquet"
+
+  price2019.write.parquet(
+    pathProcessingZone2019,
+    mode = 'overwrite'
+  )
+
+  price2019Parquet = spark.read.parquet(
+    pathProcessingZone2019
+  )
+
+  price2019Parquet.limit(5).show()
+
+  #2020
+  pathProcessingZone2020 = "dataMinio/processing/2020/2020.parquet"
+
+  price2020.write.parquet(
+    pathProcessingZone2020,
+    mode = 'overwrite'
+  )
+
+  price2020Parquet = spark.read.parquet(
+    pathProcessingZone2020
+  )
+
+  price2020Parquet.limit(5).show()
+
+  #2021
+  pathProcessingZone2021 = "dataMinio/processing/2021/2021.parquet"
+
+  price2021.write.parquet(
+    pathProcessingZone2021,
+    mode = 'overwrite'
+  )
+
+  price2021Parquet = spark.read.parquet(
+    pathProcessingZone2021
+  )
+
+  price2021Parquet.limit(5).show()
+
+  #2022
+  pathProcessingZone2022 = "dataMinio/processing/2022/2022.parquet"
+
+  price2022.write.parquet(
+    pathProcessingZone2022,
+    mode = 'overwrite'
+  )
+
+  price2022Parquet = spark.read.parquet(
+    pathProcessingZone2022
+  )
+
+  price2022Parquet.limit(5).show()
+
+def transform_icao():
+  pathICAO = "dataMinio/landing/icoa.json"
+
+  icao = spark.read.option("multiline", "true").json(pathICAO)
+
+  icao.select("icao", "city", "country").where('country=="Brazil"').limit(5).show()
+
+  icaoAirportBrazil = icao.select("icao", "city", "country").where('country=="Brazil"')
+
+  icaoAirportBrazilNotNull = icaoAirportBrazil.where('icao!=""').limit(60).show()
+
+  icaoAirportBrazil.printSchema()
+
+  #Transform to Parquet
+  icaoParquet = "dataMinio/processing/icao/icao.parquet"
+
+  icaoAirportBrazil.write.parquet(
+    icaoParquet,
+    mode = 'overwrite'
+  )
+
+  icao_parquet = spark.read.parquet(
+    icaoParquet
+  )
+
+  icao_parquet.show()
+
+def join_tables():
+  price2019Path = "dataMinio/processing/2019/2019.parquet"
+  price2020Path = "dataMinio/processing/2020/2020.parquet"
+  price2021Path = "dataMinio/processing/2021/2021.parquet"
+  price2022Path = "dataMinio/processing/2022/2022.parquet"
+  distPath = "dataMinio/processing/dist/dist.parquet"
+  icaoPath = "dataMinio/processing/icao/icao.parquet"
+
+  price2019 = spark.read.parquet(price2019Path)
+  price2020 = spark.read.parquet(price2020Path)
+  price2021 = spark.read.parquet(price2021Path)
+  price2022 = spark.read.parquet(price2022Path)
+  dist = spark.read.parquet(distPath)
+  icao = spark.read.parquet(icaoPath)
+
+  #Price Views
+  price2019.createOrReplaceTempView("2019View")
+  price2020.createOrReplaceTempView("2020View")
+  price2021.createOrReplaceTempView("2021View")
+  price2022.createOrReplaceTempView("2022View")
+
+  #ICAO View
+  icao.createOrReplaceTempView("icaoView")
+
+  #Dist View
+  dist.createOrReplaceTempView("distView")
+
+  #Join tables by year
+  #2019
+  data2019 = spark.sql("""
+        SELECT 
+        A.year, A.month, A.company, B.city, A.destination, A.price, A.seats, C.distLine AS distance
+        FROM
+        2019View A
+        INNER JOIN
+        icaoView B
+        ON A.destination = B.icao
+        INNER JOIN
+        distView C
+        ON B.city = C.city
+        """)
+
+  path2019Curated = "dataMinio/curated/2019.csv"
+
+  data2019.write.option("header",True).option("delimiter", ",").mode("overwrite").csv(path2019Curated)
+
+  #2020
+  data2020 = spark.sql("""
+        SELECT 
+        A.year, A.month, A.company, B.city, A.destination, A.price, A.seats, C.distLine AS distance
+        FROM
+        2020View A
+        INNER JOIN
+        icaoView B
+        ON A.destination = B.icao
+        INNER JOIN
+        distView C
+        ON B.city = C.city
+        """)
+  
+  path2020Curated = "dataMinio/curated/2020.csv"
+
+  data2020.write.option("header",True).option("delimiter", ",").mode("overwrite").csv(path2020Curated)
+
+  #2021
+  data2021 = spark.sql("""
+        SELECT 
+        A.year, A.month, A.company, B.city, A.destination, A.price, A.seats, C.distLine AS distance
+        FROM
+        2021View A
+        INNER JOIN
+        icaoView B
+        ON A.destination = B.icao
+        INNER JOIN
+        distView C
+        ON B.city = C.city
+        """)
+
+  path2021Curated = "dataMinio/curated/2021.csv"
+
+  data2021.write.option("header",True).option("delimiter", ",").mode("overwrite").csv(path2021Curated)
+
+  #2022
+  data2022 = spark.sql("""
+          SELECT 
+          A.year, A.month, A.company, B.city, A.destination, A.price, A.seats, C.distLine AS distance
+          FROM
+          2022View A
+          INNER JOIN
+          icaoView B
+          ON A.destination = B.icao
+          INNER JOIN
+          distView C
+          ON B.city = C.city
+          """)
+
+  path2022Curated = "dataMinio/curated/2022.csv"
+
+  data2022.repartition(1).write.option("header",True).option("delimiter", ",").mode("overwrite").csv(path2022Curated)
+
+  os.system('docker cp airflow:/opt/airflow/dataMinio/curated .')
 
 extract_task_dist = PythonOperator(
   task_id='extract_file_dist_from_data_lake',
@@ -280,6 +478,13 @@ extract_task_icao = PythonOperator(
   dag=dag
 )
 
+transform_task_dist = PythonOperator(
+  task_id='transform_file_dist',
+  provide_context=True,
+  python_callable=transform_dist,
+  dag=dag
+)
+
 transform_task_price = PythonOperator(
   task_id='transform_file_price',
   provide_context=True,
@@ -287,6 +492,22 @@ transform_task_price = PythonOperator(
   dag=dag
 )
 
-extract_task_dist >> extract_task_price >> extract_task_icao >> transform_task_price
+transform_task_icao = PythonOperator(
+  task_id='transform_file_icao',
+  provide_context=True,
+  python_callable=transform_icao,
+  dag=dag
+)
 
+join_tables_curated = PythonOperator(
+  task_id='join_tables_curated',
+  provide_context=True,
+  python_callable=join_tables,
+  dag=dag
+)
 
+extract_task_dist >> transform_task_dist
+extract_task_price >> transform_task_price  
+extract_task_icao >> transform_task_icao
+
+[transform_task_dist, transform_task_price, transform_task_icao] >> join_tables_curated
