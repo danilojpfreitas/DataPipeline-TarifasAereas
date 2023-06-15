@@ -38,12 +38,28 @@ client = Minio(
 #Start Spark
 findspark.init()
 
-spark = SparkSession.builder.master('local[*]').getOrCreate()
+# spark = SparkSession.builder.master('local[*]').getOrCreate()
+spark = SparkSession.builder.appName("Snowflake-Connection").master('local[*]').config("spark.jars", "/opt/airflow/path/spark-snowflake_2.12-2.9.3-spark_3.1.jar,/opt/airflow/path/snowflake-jdbc-3.13.10.jar").getOrCreate()
+spark.sparkContext.addPyFile("/opt/airflow/path/spark-snowflake_2.12-2.9.3-spark_3.1.jar")
+spark.sparkContext.addPyFile("/opt/airflow/path/snowflake-jdbc-3.13.10.jar")
+
+SNOWFLAKE_SOURCE_NAME= "net.snowflake.spark.snowflake"
+
+#snowflake
+sfOptions = {
+  "sfURL" : "gu89866.east-us-2.azure.snowflakecomputing.com",
+  "sfAccount" : "gu89866",
+  "sfUser" : "***",
+  "sfPassword" : "***",
+  "sfDatabase" : "database",
+  "sfSchema" : "myschema",
+  "sfWarehouse" : "COMPUTE_WH"
+}
 
 def extract_dist():
   pathDist = "dataMinio/landing/dist.json"
 
-  #extraindo dados a partir do Data Lake
+  #Extraindo dados a partir do Data Lake
   obj = client.fget_object(
                 "landing",
                 "maceioDistCapitals.json",
@@ -355,7 +371,7 @@ def transform_icao():
 
   icao_parquet.show()
 
-def join_tables():
+def to_snowflake():
   price2019Path = "dataMinio/processing/2019/2019.parquet"
   price2020Path = "dataMinio/processing/2020/2020.parquet"
   price2021Path = "dataMinio/processing/2021/2021.parquet"
@@ -376,11 +392,11 @@ def join_tables():
   price2021.createOrReplaceTempView("2021View")
   price2022.createOrReplaceTempView("2022View")
 
-  #ICAO View
-  icao.createOrReplaceTempView("icaoView")
-
   #Dist View
   dist.createOrReplaceTempView("distView")
+
+  #ICAO View
+  icao.createOrReplaceTempView("icaoView")
 
   #Join tables by year
   #2019
@@ -401,6 +417,10 @@ def join_tables():
 
   data2019.write.option("header",True).option("delimiter", ",").mode("overwrite").csv(path2019Curated)
 
+  #Airflow
+  data2019.write.format(SNOWFLAKE_SOURCE_NAME).options(**sfOptions).option("dbtable", "data2019").mode("overwrite").save()
+
+
   #2020
   data2020 = spark.sql("""
         SELECT 
@@ -418,6 +438,9 @@ def join_tables():
   path2020Curated = "dataMinio/curated/2020.csv"
 
   data2020.write.option("header",True).option("delimiter", ",").mode("overwrite").csv(path2020Curated)
+
+  #Airflow
+  data2020.write.format(SNOWFLAKE_SOURCE_NAME).options(**sfOptions).option("dbtable", "data2020").mode("overwrite").save()
 
   #2021
   data2021 = spark.sql("""
@@ -437,6 +460,9 @@ def join_tables():
 
   data2021.write.option("header",True).option("delimiter", ",").mode("overwrite").csv(path2021Curated)
 
+  #Airflow
+  data2021.write.format(SNOWFLAKE_SOURCE_NAME).options(**sfOptions).option("dbtable", "data2021").mode("overwrite").save()
+
   #2022
   data2022 = spark.sql("""
           SELECT 
@@ -453,9 +479,11 @@ def join_tables():
 
   path2022Curated = "dataMinio/curated/2022.csv"
 
-  data2022.repartition(1).write.option("header",True).option("delimiter", ",").mode("overwrite").csv(path2022Curated)
+  data2022.write.option("header",True).option("delimiter", ",").mode("overwrite").csv(path2022Curated)
 
-  os.system('docker cp airflow:/opt/airflow/dataMinio/curated .')
+  #Airflow
+  data2022.write.format(SNOWFLAKE_SOURCE_NAME).options(**sfOptions).option("dbtable", "data2022").mode("overwrite").save()
+
 
 extract_task_dist = PythonOperator(
   task_id='extract_file_dist_from_data_lake',
@@ -499,15 +527,15 @@ transform_task_icao = PythonOperator(
   dag=dag
 )
 
-join_tables_curated = PythonOperator(
-  task_id='join_tables_curated',
+spark_to_snowflake = PythonOperator(
+  task_id='to_snowflake',
   provide_context=True,
-  python_callable=join_tables,
+  python_callable=to_snowflake,
   dag=dag
 )
 
-extract_task_dist >> transform_task_dist
+extract_task_dist >> transform_task_dist 
 extract_task_price >> transform_task_price  
 extract_task_icao >> transform_task_icao
 
-[transform_task_dist, transform_task_price, transform_task_icao] >> join_tables_curated
+[transform_task_dist, transform_task_price, transform_task_icao] >> spark_to_snowflake

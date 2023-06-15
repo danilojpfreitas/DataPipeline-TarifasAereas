@@ -35,6 +35,15 @@ install() {
     #Docker move files Airflow to Root
     docker cp airflow:/opt/airflow/dataMinio/curated .
 
+    #Airflow to Snowflake - Fonte: https://stackoverflow.com/questions/70305199/how-to-load-a-dataframe-in-pyspark-to-snowflake https://python.plainenglish.io/how-to-connect-and-query-snowflake-tables-using-apache-spark-pyspark-a27acfd6c042
+    pip intall pyspark
+    pip intal wget
+    mkdir path
+    cd path
+    wget https://repo1.maven.org/maven2/net/snowflake/spark-snowflake_2.12/2.9.3-spark_3.1/spark-snowflake_2.12-2.9.3-spark_3.1.jar
+    wget https://repo1.maven.org/maven2/net/snowflake/snowflake-jdbc/3.13.10/snowflake-jdbc-3.13.10.jar
+    pyspark --packages net.snowflake:snowflake-jdbc:3.8.0,net.snowflake:spark-snowflake_2.11:2.4.14-spark_2.4
+
     echo "Install Metabase..."
     mkdir metabase
     cd metabase
