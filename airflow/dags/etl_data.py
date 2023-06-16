@@ -405,10 +405,10 @@ def to_snowflake():
         A.year, A.month, A.company, B.city, A.destination, A.price, A.seats, C.distLine AS distance
         FROM
         2019View A
-        INNER JOIN
+        LEFT JOIN
         icaoView B
         ON A.destination = B.icao
-        INNER JOIN
+        LEFT JOIN
         distView C
         ON B.city = C.city
         """)
@@ -427,10 +427,10 @@ def to_snowflake():
         A.year, A.month, A.company, B.city, A.destination, A.price, A.seats, C.distLine AS distance
         FROM
         2020View A
-        INNER JOIN
+        LEFT JOIN
         icaoView B
         ON A.destination = B.icao
-        INNER JOIN
+        LEFT JOIN
         distView C
         ON B.city = C.city
         """)
@@ -448,10 +448,10 @@ def to_snowflake():
         A.year, A.month, A.company, B.city, A.destination, A.price, A.seats, C.distLine AS distance
         FROM
         2021View A
-        INNER JOIN
+        LEFT JOIN
         icaoView B
         ON A.destination = B.icao
-        INNER JOIN
+        LEFT JOIN
         distView C
         ON B.city = C.city
         """)
@@ -469,10 +469,10 @@ def to_snowflake():
           A.year, A.month, A.company, B.city, A.destination, A.price, A.seats, C.distLine AS distance
           FROM
           2022View A
-          INNER JOIN
+          LEFT JOIN
           icaoView B
           ON A.destination = B.icao
-          INNER JOIN
+          LEFT JOIN
           distView C
           ON B.city = C.city
           """)
