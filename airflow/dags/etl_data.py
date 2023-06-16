@@ -106,21 +106,21 @@ def extract_price():
   price2022.show()
 
 def extract_icao():
-  pathICAO = "dataMinio/landing/icoa.json"
+  pathICAO = "dataMinio/landing/icao.json"
 
   #extraindo dados a partir do Data Lake
   obj = client.fget_object(
                 "landing",
-                "airports.json",
+                "icao.json",
                 pathICAO
   )
 
-  icao = spark.read.option("multiline", "true").json(pathICAO)
+  # icao = spark.read.option("multiline", "true").json(pathICAO)
 
   icao.printSchema()
 
 def transform_dist():
-  pathDist = "dataMinio/landing/dist.json"
+  pathDist = "dataMinio/landing/dist/dist.json"
 
   dist = spark.read.option("multiline", "true").json(pathDist)
 
