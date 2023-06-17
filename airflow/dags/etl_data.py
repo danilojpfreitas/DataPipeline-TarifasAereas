@@ -56,19 +56,19 @@ sfOptions = {
   "sfWarehouse" : "COMPUTE_WH"
 }
 
-def extract_dist():
-  pathDist = "dataMinio/landing/dist.json"
+# def extract_dist():
+#   pathDist = "dataMinio/landing/dist.json"
 
-  #Extraindo dados a partir do Data Lake
-  obj = client.fget_object(
-                "landing",
-                "maceioDistCapitals.json",
-                pathDist
-  )
+#   #Extraindo dados a partir do Data Lake
+#   obj = client.fget_object(
+#                 "landing",
+#                 "maceioDistCapitals.json",
+#                 pathDist
+#   )
 
-  dist = spark.read.option("multiline", "true").json(pathDist)
+#   dist = spark.read.option("multiline", "true").json(pathDist)
 
-  dist.show()
+#   dist.show()
 
 def extract_price():
 
@@ -106,41 +106,51 @@ def extract_price():
   price2022.show()
 
 def extract_icao():
-  pathICAO = "dataMinio/landing/icao.json"
+  pathICAO = "dataMinio/landing/icao/icao.csv"
 
   #extraindo dados a partir do Data Lake
   obj = client.fget_object(
                 "landing",
-                "icao.json",
+                "icao/icao.csv",
                 pathICAO
   )
 
   # icao = spark.read.option("multiline", "true").json(pathICAO)
 
-  icao.printSchema()
+  # icao.printSchema()
 
-def transform_dist():
-  pathDist = "dataMinio/landing/dist/dist.json"
+def extract_statistics():
+  pathStatistics = 'dataMinio/landing/statistics/Dados_Estatisticos.csv'
 
-  dist = spark.read.option("multiline", "true").json(pathDist)
-
-  #transform to parquet
-  distParquet = "dataMinio/processing/dist/dist.parquet"
-
-  dist.write.parquet(
-    distParquet,
-    mode = 'overwrite'
+  #extraindo dados a partir do Data Lake
+  obj = client.fget_object(
+                "landing",
+                "statistics/Dados_Estatisticos.csv",
+                pathStatistics
   )
 
-  dist_parquet = spark.read.parquet(distParquet)
+# def transform_dist():
+#   pathDist = "dataMinio/landing/dist/dist.json"
 
-  dist_parquet.show()
+#   dist = spark.read.option("multiline", "true").json(pathDist)
 
-  # result = client.fput_object(
-  #   "processing",
-  #   "dist.parquet",
-  #   "/opt/airflow/dataMinio/processing/dist/dist.parquet"
-  # )
+#   #transform to parquet
+#   distParquet = "dataMinio/processing/dist/dist.parquet"
+
+#   dist.write.parquet(
+#     distParquet,
+#     mode = 'overwrite'
+#   )
+
+#   dist_parquet = spark.read.parquet(distParquet)
+
+#   dist_parquet.show()
+
+#   result = client.fput_object(
+#     "processing",
+#     "dist.parquet",
+#     "/opt/airflow/dataMinio/processing/dist/dist.parquet"
+#   )
 
 def transform_price():
   price2019 = spark.read.csv("dataMinio/landing/price2019/*.csv", sep=';', inferSchema=True)
@@ -206,6 +216,7 @@ def transform_price():
 
   price2019.limit(10).show()
 
+  #2020
   print("2020")
   price2020 = price2020\
     .withColumn(
@@ -233,6 +244,7 @@ def transform_price():
 
   price2020.printSchema()
 
+  #2021
   print("2021")
   price2021 = price2021\
     .withColumn(
@@ -260,6 +272,7 @@ def transform_price():
 
   price2021.printSchema()
 
+  #2022
   print("2022")
   price2022 = price2022\
     .withColumn(
@@ -287,9 +300,9 @@ def transform_price():
 
   price2022.printSchema()
 
-  #tranform to Parquet
+  #Tranform to Parquet
   #2019
-  pathProcessingZone2019 = "dataMinio/processing/2019/2019.parquet"
+  pathProcessingZone2019 = "dataMinio/processing/2019"
 
   price2019.write.parquet(
     pathProcessingZone2019,
@@ -303,7 +316,7 @@ def transform_price():
   price2019Parquet.limit(5).show()
 
   #2020
-  pathProcessingZone2020 = "dataMinio/processing/2020/2020.parquet"
+  pathProcessingZone2020 = "dataMinio/processing/2020"
 
   price2020.write.parquet(
     pathProcessingZone2020,
@@ -317,7 +330,7 @@ def transform_price():
   price2020Parquet.limit(5).show()
 
   #2021
-  pathProcessingZone2021 = "dataMinio/processing/2021/2021.parquet"
+  pathProcessingZone2021 = "dataMinio/processing/2021"
 
   price2021.write.parquet(
     pathProcessingZone2021,
@@ -331,7 +344,7 @@ def transform_price():
   price2021Parquet.limit(5).show()
 
   #2022
-  pathProcessingZone2022 = "dataMinio/processing/2022/2022.parquet"
+  pathProcessingZone2022 = "dataMinio/processing/2022"
 
   price2022.write.parquet(
     pathProcessingZone2022,
@@ -345,45 +358,118 @@ def transform_price():
   price2022Parquet.limit(5).show()
 
 def transform_icao():
-  pathICAO = "dataMinio/landing/icoa.json"
+  pathICAO = "dataMinio/landing/icao"
 
-  icao = spark.read.option("multiline", "true").json(pathICAO)
-
-  icao.select("icao", "city", "country").where('country=="Brazil"').limit(5).show()
-
-  icaoAirportBrazil = icao.select("icao", "city", "country").where('country=="Brazil"')
-
-  icaoAirportBrazilNotNull = icaoAirportBrazil.where('icao!=""').limit(60).show()
-
-  icaoAirportBrazil.printSchema()
+  icao = spark.read.csv(pathICAO, sep=',', header=True)
 
   #Transform to Parquet
-  icaoParquet = "dataMinio/processing/icao/icao.parquet"
+  icaoParquet = "dataMinio/processing/icao"
 
-  icaoAirportBrazil.write.parquet(
-    icaoParquet,
-    mode = 'overwrite'
+  icao.write.parquet(
+      icaoParquet,
+      mode = 'overwrite'
   )
 
   icao_parquet = spark.read.parquet(
-    icaoParquet
+      icaoParquet
   )
 
   icao_parquet.show()
 
+def transform_statistics():
+  pathStatistics = 'dataMinio/landing/statistics'
+
+  estatisticos = spark.read.csv(pathStatistics, sep=';', header=True)
+
+  estatisticos.printSchema()
+
+  estatisticos.createOrReplaceTempView('estatisticosSQLView')
+
+  #Select some Columns
+  estatisticosSelect = spark.sql("""
+        SELECT
+        EMPRESA_SIGLA AS company,
+        EMPRESA_NOME AS companyName,
+        EMPRESA_NACIONALIDADE AS nationality,
+        ANO AS year,
+        MES AS month,
+        AEROPORTO_DE_ORIGEM_SIGLA AS origin,
+        AEROPORTO_DE_DESTINO_SIGLA AS destination,
+        DECOLAGENS AS takeOffs,
+        DISTANCIA_VOADA_KM AS distance,
+        ASSENTOS AS seats,
+        HORAS_VOADAS AS time,
+        PASSAGEIROS_PAGOS AS paidPassengers,
+        PASSAGEIROS_GRATIS AS noPaidPassengers
+        FROM
+        estatisticosSQLView
+  """)
+
+  estatisticosSelect.limit(5).show()
+
+  estatisticosSelect = estatisticosSelect\
+    .withColumn(
+    "year",
+    estatisticosSelect["year"].cast(IntegerType())
+    )\
+    .withColumn(
+    "month",
+    estatisticosSelect["month"].cast(IntegerType())
+    )\
+    .withColumn(
+    "takeOffs",
+    estatisticosSelect["takeOffs"].cast(IntegerType())
+    )\
+    .withColumn(
+    "distance",
+    estatisticosSelect["distance"].cast(IntegerType())
+    )\
+    .withColumn(
+    "seats",
+    estatisticosSelect["seats"].cast(IntegerType())
+    )\
+    .withColumn(
+    "time",
+    f.regexp_replace('time', ',', '.')
+    )\
+    .withColumn(
+    "paidPassengers",
+    estatisticosSelect["paidPassengers"].cast(IntegerType())
+    )\
+    .withColumn(
+    "noPaidPassengers",
+    estatisticosSelect["noPaidPassengers"].cast(IntegerType())
+    )
+  
+  estatisticosSelect.printSchema()
+
+  #Select years between 2019 to 2022
+  estatisticos2019To2022MCZ = estatisticosSelect.where('year >= 2019').where('year <= 2022').where('origin == "SBMO"')
+
+  estatisticos2019To2022MCZ.count()
+
+  #Transform to Parquet
+  statisticsParquet = "dataMinio/processing/statistics"
+
+  estatisticos2019To2022MCZ.write.parquet(
+    statisticsParquet,
+    mode = 'overwrite'
+  )
+
+
 def to_snowflake():
-  price2019Path = "dataMinio/processing/2019/2019.parquet"
-  price2020Path = "dataMinio/processing/2020/2020.parquet"
-  price2021Path = "dataMinio/processing/2021/2021.parquet"
-  price2022Path = "dataMinio/processing/2022/2022.parquet"
-  distPath = "dataMinio/processing/dist/dist.parquet"
-  icaoPath = "dataMinio/processing/icao/icao.parquet"
+  price2019Path = "dataMinio/processing/2019/*.parquet"
+  price2020Path = "dataMinio/processing/2020/*.parquet"
+  price2021Path = "dataMinio/processing/2021/*.parquet"
+  price2022Path = "dataMinio/processing/2022/*.parquet"
+  statisticsPath = "dataMinio/processing/statistics/*.parquet"
+  icaoPath = "dataMinio/processing/icao/*.parquet"
 
   price2019 = spark.read.parquet(price2019Path)
   price2020 = spark.read.parquet(price2020Path)
   price2021 = spark.read.parquet(price2021Path)
   price2022 = spark.read.parquet(price2022Path)
-  dist = spark.read.parquet(distPath)
+  statistics = spark.read.parquet(statisticsPath)
   icao = spark.read.parquet(icaoPath)
 
   #Price Views
@@ -392,26 +478,47 @@ def to_snowflake():
   price2021.createOrReplaceTempView("2021View")
   price2022.createOrReplaceTempView("2022View")
 
-  #Dist View
-  dist.createOrReplaceTempView("distView")
+  #Statistics View
+  statistics.createOrReplaceTempView("statisticsView")
 
   #ICAO View
   icao.createOrReplaceTempView("icaoView")
 
   #Join tables by year
   #2019
-  data2019 = spark.sql("""
-        SELECT 
-        A.year, A.month, A.company, B.city, A.destination, A.price, A.seats, C.distLine AS distance
+  avgPrice2019 = spark.sql("""
+        SELECT
+        year, month, company, origin, destination, 
+        ROUND((SUM(price*seats)/SUM(seats)), 2) AS priceAVG, SUM(seats) AS seats
         FROM
-        2019View A
-        LEFT JOIN
-        icaoView B
-        ON A.destination = B.icao
-        LEFT JOIN
-        distView C
-        ON B.city = C.city
+        2019View    
+        GROUP BY year, month, company, origin, destination
+        ORDER BY month
         """)
+  
+  avgPrice2019.createOrReplaceTempView("avgPrice2019View")
+
+  data2019 = spark.sql("""
+        SELECT
+        A.year, A.month, A.company, B.companyName, C.city,
+        C.state, A.destination, A.priceAVG, A.seats AS seatsAVG, 
+        B.takeOffs, B.distance, B.seats AS seatsAll,
+        B.time
+        FROM
+        avgPrice2019View A
+        LEFT JOIN
+        (SELECT * FROM statisticsView WHERE year == 2019) B
+        ON A.month = B.month AND A.company = B.company AND A.destination == B.destination
+        LEFT JOIN
+        icaoView C
+        ON A.destination = C.icao
+        """)
+  
+  data2019 = data2019.where(data2019.time.isNotNull())
+
+  data2019.limit(5).show()
+
+  data2019.count()
 
   path2019Curated = "dataMinio/curated/2019.csv"
 
@@ -422,18 +529,35 @@ def to_snowflake():
 
 
   #2020
+  avgPrice2020 = spark.sql("""
+          SELECT
+          year, month, company, origin, destination, 
+          ROUND((SUM(price*seats)/SUM(seats)), 2) AS priceAVG, SUM(seats) AS seats
+          FROM
+          2020View    
+          GROUP BY year, month, company, origin, destination
+          ORDER BY month
+  """)
+
+  avgPrice2020.createOrReplaceTempView("avgPrice2020View")
+
   data2020 = spark.sql("""
-        SELECT 
-        A.year, A.month, A.company, B.city, A.destination, A.price, A.seats, C.distLine AS distance
+        SELECT
+        A.year, A.month, A.company, B.companyName, C.city,
+        C.state, A.destination, A.priceAVG, A.seats AS seatsAVG, 
+        B.takeOffs, B.distance, B.seats AS seatsAll,
+        B.time
         FROM
-        2020View A
+        avgPrice2020View A
         LEFT JOIN
-        icaoView B
-        ON A.destination = B.icao
+        (SELECT * FROM statisticsView WHERE year == 2020) B
+        ON A.month = B.month AND A.company = B.company AND A.destination == B.destination
         LEFT JOIN
-        distView C
-        ON B.city = C.city
-        """)
+        icaoView C
+        ON A.destination = C.icao
+  """)
+
+  data2020 = data2020.where(data2020.time.isNotNull())
   
   path2020Curated = "dataMinio/curated/2020.csv"
 
@@ -442,19 +566,37 @@ def to_snowflake():
   #Airflow
   data2020.write.format(SNOWFLAKE_SOURCE_NAME).options(**sfOptions).option("dbtable", "data2020").mode("overwrite").save()
 
+
   #2021
+  avgPrice2021 = spark.sql("""
+          SELECT
+          year, month, company, origin, destination, 
+          ROUND((SUM(price*seats)/SUM(seats)), 2) AS priceAVG, SUM(seats) AS seats
+          FROM
+          2021View    
+          GROUP BY year, month, company, origin, destination
+          ORDER BY month
+  """)
+
+  avgPrice2021.createOrReplaceTempView("avgPrice2021View")
+
   data2021 = spark.sql("""
-        SELECT 
-        A.year, A.month, A.company, B.city, A.destination, A.price, A.seats, C.distLine AS distance
+        SELECT
+        A.year, A.month, A.company, B.companyName, C.city,
+        C.state, A.destination, A.priceAVG, A.seats AS seatsAVG, 
+        B.takeOffs, B.distance, B.seats AS seatsAll,
+        B.time
         FROM
-        2021View A
+        avgPrice2021View A
         LEFT JOIN
-        icaoView B
-        ON A.destination = B.icao
+        (SELECT * FROM statisticsView WHERE year == 2021) B
+        ON A.month = B.month AND A.company = B.company AND A.destination == B.destination
         LEFT JOIN
-        distView C
-        ON B.city = C.city
-        """)
+        icaoView C
+        ON A.destination = C.icao
+  """)
+
+  data2021 = data2021.where(data2021.time.isNotNull())
 
   path2021Curated = "dataMinio/curated/2021.csv"
 
@@ -463,19 +605,37 @@ def to_snowflake():
   #Airflow
   data2021.write.format(SNOWFLAKE_SOURCE_NAME).options(**sfOptions).option("dbtable", "data2021").mode("overwrite").save()
 
+
   #2022
-  data2022 = spark.sql("""
-          SELECT 
-          A.year, A.month, A.company, B.city, A.destination, A.price, A.seats, C.distLine AS distance
+  avgPrice2022 = spark.sql("""
+          SELECT
+          year, month, company, origin, destination, 
+          ROUND((SUM(price*seats)/SUM(seats)), 2) AS priceAVG, SUM(seats) AS seats
           FROM
-          2022View A
-          LEFT JOIN
-          icaoView B
-          ON A.destination = B.icao
-          LEFT JOIN
-          distView C
-          ON B.city = C.city
-          """)
+          2022View    
+          GROUP BY year, month, company, origin, destination
+          ORDER BY month
+  """)
+
+  avgPrice2022.createOrReplaceTempView("avgPrice2022View")
+
+  data2022 = spark.sql("""
+        SELECT
+        A.year, A.month, A.company, B.companyName, C.city,
+        C.state, A.destination, A.priceAVG, A.seats AS seatsAVG, 
+        B.takeOffs, B.distance, B.seats AS seatsAll,
+        B.time
+        FROM
+        avgPrice2022View A
+        LEFT JOIN
+        (SELECT * FROM statisticsView WHERE year == 2022) B
+        ON A.month = B.month AND A.company = B.company AND A.destination == B.destination
+        LEFT JOIN
+        icaoView C
+        ON A.destination = C.icao
+  """)
+
+  data2022 = data2022.where(data2022.time.isNotNull())
 
   path2022Curated = "dataMinio/curated/2022.csv"
 
@@ -485,12 +645,12 @@ def to_snowflake():
   data2022.write.format(SNOWFLAKE_SOURCE_NAME).options(**sfOptions).option("dbtable", "data2022").mode("overwrite").save()
 
 
-extract_task_dist = PythonOperator(
-  task_id='extract_file_dist_from_data_lake',
-  provide_context=True,
-  python_callable=extract_dist,
-  dag=dag
-)
+# extract_task_dist = PythonOperator(
+#   task_id='extract_file_dist_from_data_lake',
+#   provide_context=True,
+#   python_callable=extract_dist,
+#   dag=dag
+# )
 
 extract_task_price = PythonOperator(
   task_id='extract_file_price_from_data_lake',
@@ -506,12 +666,19 @@ extract_task_icao = PythonOperator(
   dag=dag
 )
 
-transform_task_dist = PythonOperator(
-  task_id='transform_file_dist',
+extract_task_statistics = PythonOperator(
+  task_id='extract_file_statistics_from_data_lake',
   provide_context=True,
-  python_callable=transform_dist,
+  python_callable=extract_statistics,
   dag=dag
 )
+
+# transform_task_dist = PythonOperator(
+#   task_id='transform_file_dist',
+#   provide_context=True,
+#   python_callable=transform_dist,
+#   dag=dag
+# )
 
 transform_task_price = PythonOperator(
   task_id='transform_file_price',
@@ -527,6 +694,13 @@ transform_task_icao = PythonOperator(
   dag=dag
 )
 
+transform_task_statistics = PythonOperator(
+  task_id='transform_file_statistics',
+  provide_context=True,
+  python_callable=transform_statistics,
+  dag=dag
+)
+
 spark_to_snowflake = PythonOperator(
   task_id='to_snowflake',
   provide_context=True,
@@ -534,8 +708,8 @@ spark_to_snowflake = PythonOperator(
   dag=dag
 )
 
-extract_task_dist >> transform_task_dist 
 extract_task_price >> transform_task_price  
 extract_task_icao >> transform_task_icao
+extract_task_statistics >> transform_task_statistics
 
-[transform_task_dist, transform_task_price, transform_task_icao] >> spark_to_snowflake
+[transform_task_price, transform_task_icao, transform_task_statistics] >> spark_to_snowflake
