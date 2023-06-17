@@ -1,2 +1,4 @@
 datalake/.minio.sys
 data/statistic
+data/processing
+data/curated
