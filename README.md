@@ -10,13 +10,13 @@ Neste projeto foi construido um Data Pipeline ETL completo para a avaliação do
 ![O Data Pipeline de ponta a ponta](img/dataPipeline.png)
 
 # :memo: Etapas do projeto:
-## :scroll: Extração dos dados
+## :file_folder: Extração dos dados
 
 Os dados utilizados foram extraídos diretamente do acervo público disponível pela Agência Nacional de Aviação Civil (ANAC).
 
 ![Extração dos dados](img/precoPassagensAereas.png)
 
-## :file_folder: Transformação dos dados (Airflow, Minio e PySpark)
+## :fast_forward: Transformação dos dados (Airflow, Minio e PySpark)
 
 Para a modelagem/transformação dos dados foi desenvolvido dentro de um notebook (ambiente de desenvolvimento) os comandos com o PySpark para a modelagem das tabelas. Realizando o tratamento dos Schemas, junção de tabelas e seleção dos dados utilizados por esse projeto.
 
@@ -36,15 +36,15 @@ Ambiente Airflow com a orquestração do processo ETL:
 
 ![Transformação dos dados](img/airflow.png)
 
-## :fast_forward: Snowflake
+## :snowflake: Snowflake
 
-Após a realização da extração e transformação, 4 tabelas carregadas disponibilizadas no Snowflake.
+Após a realização da extração e transformação, 4 tabelas foram carregadas e disponibilizadas no Snowflake.
 
 ![Carregamento dos dados](img/passagensAereasProjectLoading.png)
 
 ![Etapa Snowflake](img/snowflake.png)
 
-## :rocket: Visualização dos dados pelo Metabase
+## :eye: Visualização dos dados pelo Metabase
 
 Com a chegada de todos os dados no Snowflake (Data Warehouse), as tabelas foram conectadas com o Metabase para a criação de um ambiente de visualização.
 
@@ -52,10 +52,10 @@ Com a chegada de todos os dados no Snowflake (Data Warehouse), as tabelas foram 
 
 ![Metabse](img/metabase.png)
 
-## :eye: Conclusão
+## :rocket: Conclusão
 
 A partir da construção desse Data Pipeline ETL é possível extrair importantes insights sobre os preços e outras variáveis das passagens aéreas pelo Brasil ou porque não pelo Mundo!
 
-Todo processo é orquestrado pelo Airflow permitindo a atualização constante dos dados ao passar dos anos. Além disso o ambiente do Snowflake permite uma rápida conexão para outros estudiosos de dados para a criação de mais insights!
+Todo processo é orquestrado pelo Airflow permitindo a atualização constante dos dados ao passar dos anos. Além disso o ambiente do Snowflake permite uma rápida conexão para que outros estudiosos de dados possam criar mais insights!
 
 ---
