@@ -1,5 +1,5 @@
-# Data Pipeline ETL com as principais features (Airflow, PySpark, Snowflake)
-## Toda a descrição (passo a passo) deste projeto está disponibilizado neste post: [Medium]()
+# Data Pipeline ETL com as principais features: Airflow, PySpark e Snowflake
+## Toda a descrição (passo a passo) deste projeto está disponibilizado neste post: [Medium](https://medium.com/@danilojpfreitas/data-pipeline-etl-com-as-principais-features-airflow-pyspark-e-snowflake-17e9709d0d51)
 
 ---
 
