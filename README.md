@@ -205,7 +205,7 @@ Dentro o Airflow é necessário cadastrar as variáveis do Minio. Em relação a
 
 Variáveis do Minio no Airflow:
 
-![Variáveis do Airflow](variaveisAirflow.png)
+![Variáveis do Airflow](img/variaveisAirflow.png)
 
 Agora com todos os passos executados é possível executar a DAG e obter ter no Snowflake as tabelas obtidas pelo processo ETL.
 
@@ -235,7 +235,7 @@ A conexão do Snowflake com o Metabase é realizado com os seguinte passos:
 - Selecionar Snowflake como o Banco de Dados;
 - Adicionar os dados de conexão com o Snowflake:
 
-![metabaseCadastro](metabaseCadastro.png)
+![metabaseCadastro](img/metabaseCadastro.png)
 
 Após a realização de todas as etapas será possível utilizar as tabelas do Snowflake no Metabase :)
 
