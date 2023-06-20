@@ -1,17 +1,12 @@
 from datetime import datetime,date, timedelta
-import pandas as pd
-from io import BytesIO
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from airflow.operators.bash import BashOperator
 from airflow.models import Variable
 from minio import Minio
-import os
-
-import findspark
 from pyspark.sql import SparkSession
-from pyspark.sql.types import DoubleType, StringType, IntegerType 
+from pyspark.sql.types import DoubleType, IntegerType 
 from pyspark.sql import functions as f
+import findspark
 
 DEFAULT_ARGS = {
     'owner': 'Airflow',
@@ -38,7 +33,6 @@ client = Minio(
 #Start Spark
 findspark.init()
 
-# spark = SparkSession.builder.master('local[*]').getOrCreate()
 spark = SparkSession.builder.appName("Snowflake-Connection").master('local[*]').config("spark.jars", "/opt/airflow/path/spark-snowflake_2.12-2.9.3-spark_3.1.jar,/opt/airflow/path/snowflake-jdbc-3.13.10.jar").getOrCreate()
 spark.sparkContext.addPyFile("/opt/airflow/path/spark-snowflake_2.12-2.9.3-spark_3.1.jar")
 spark.sparkContext.addPyFile("/opt/airflow/path/snowflake-jdbc-3.13.10.jar")
@@ -47,28 +41,14 @@ SNOWFLAKE_SOURCE_NAME= "net.snowflake.spark.snowflake"
 
 #snowflake
 sfOptions = {
-  "sfURL" : "gu89866.east-us-2.azure.snowflakecomputing.com",
-  "sfAccount" : "gu89866",
+  "sfURL" : "***",
+  "sfAccount" : "***",
   "sfUser" : "***",
   "sfPassword" : "***",
-  "sfDatabase" : "database",
-  "sfSchema" : "myschema",
-  "sfWarehouse" : "COMPUTE_WH"
+  "sfDatabase" : "***",
+  "sfSchema" : "***",
+  "sfWarehouse" : "***"
 }
-
-# def extract_dist():
-#   pathDist = "dataMinio/landing/dist.json"
-
-#   #Extraindo dados a partir do Data Lake
-#   obj = client.fget_object(
-#                 "landing",
-#                 "maceioDistCapitals.json",
-#                 pathDist
-#   )
-
-#   dist = spark.read.option("multiline", "true").json(pathDist)
-
-#   dist.show()
 
 def extract_price():
 
@@ -115,10 +95,6 @@ def extract_icao():
                 pathICAO
   )
 
-  # icao = spark.read.option("multiline", "true").json(pathICAO)
-
-  # icao.printSchema()
-
 def extract_statistics():
   pathStatistics = 'dataMinio/landing/statistics/Dados_Estatisticos.csv'
 
@@ -128,29 +104,6 @@ def extract_statistics():
                 "statistics/Dados_Estatisticos.csv",
                 pathStatistics
   )
-
-# def transform_dist():
-#   pathDist = "dataMinio/landing/dist/dist.json"
-
-#   dist = spark.read.option("multiline", "true").json(pathDist)
-
-#   #transform to parquet
-#   distParquet = "dataMinio/processing/dist/dist.parquet"
-
-#   dist.write.parquet(
-#     distParquet,
-#     mode = 'overwrite'
-#   )
-
-#   dist_parquet = spark.read.parquet(distParquet)
-
-#   dist_parquet.show()
-
-#   result = client.fput_object(
-#     "processing",
-#     "dist.parquet",
-#     "/opt/airflow/dataMinio/processing/dist/dist.parquet"
-#   )
 
 def transform_price():
   price2019 = spark.read.csv("dataMinio/landing/price2019/*.csv", sep=';', inferSchema=True)
@@ -644,14 +597,6 @@ def to_snowflake():
   #Airflow
   data2022.write.format(SNOWFLAKE_SOURCE_NAME).options(**sfOptions).option("dbtable", "data2022").mode("overwrite").save()
 
-
-# extract_task_dist = PythonOperator(
-#   task_id='extract_file_dist_from_data_lake',
-#   provide_context=True,
-#   python_callable=extract_dist,
-#   dag=dag
-# )
-
 extract_task_price = PythonOperator(
   task_id='extract_file_price_from_data_lake',
   provide_context=True,
@@ -672,13 +617,6 @@ extract_task_statistics = PythonOperator(
   python_callable=extract_statistics,
   dag=dag
 )
-
-# transform_task_dist = PythonOperator(
-#   task_id='transform_file_dist',
-#   provide_context=True,
-#   python_callable=transform_dist,
-#   dag=dag
-# )
 
 transform_task_price = PythonOperator(
   task_id='transform_file_price',
